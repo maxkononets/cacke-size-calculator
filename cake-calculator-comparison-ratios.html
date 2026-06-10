@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор торта</title>
+  <style>
+    :root {
+      --bg: #f6f4ef;
+      --card: #ffffff;
+      --text: #222222;
+      --muted: #666666;
+      --accent: #8b5e34;
+      --accent-light: #f1e4d3;
+      --border: #ded6cc;
+      --danger: #b94a48;
+      --ok: #3c763d;
+      --ref: #9f7aea;
+      --new: #8b5e34;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header { margin-bottom: 20px; }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    }
+
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 22px;
+    }
+
+    .hint {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .field { margin-bottom: 14px; }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 650;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 13px;
+      font-size: 17px;
+      background: #fff;
+    }
+
+    input:focus {
+      outline: 2px solid var(--accent-light);
+      border-color: var(--accent);
+    }
+
+    .unit {
+      min-width: 48px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .result {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--accent-light);
+      border: 1px solid #e3c9aa;
+    }
+
+    .result-title {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .result-value {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .small-result {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mode {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0 16px;
+    }
+
+    .mode button {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .mode button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .readonly {
+      background: #f5f5f5;
+      color: var(--muted);
+    }
+
+    .status {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      background: #f7f7f7;
+      color: var(--muted);
+    }
+
+    .status.ok {
+      background: #edf7ed;
+      color: var(--ok);
+    }
+
+    .status.warn {
+      background: #fff3f2;
+      color: var(--danger);
+    }
+
+    .visual-card { margin-top: 18px; }
+
+    .cake-visual-wrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      justify-items: center;
+    }
+
+    .cake-3d-wrap {
+      position: relative;
+      width: 100%;
+      height: 420px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #f3efe7 0%, #e7e0d4 100%);
+      cursor: grab;
+    }
+
+    .cake-3d-wrap:active {
+      cursor: grabbing;
+    }
+
+    .cake-3d-wrap canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .cake-3d-label {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform: translate(-50%, -50%);
+      font-size: 13px;
+      font-weight: 650;
+      color: #444;
+      background: rgba(255, 255, 255, 0.78);
+      padding: 2px 6px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .cake-3d-label.muted {
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+    }
+
+    .cake-3d-hint {
+      position: absolute;
+      right: 12px;
+      bottom: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.78);
+      padding: 3px 10px;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .cake-3d-controls {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .cake-3d-reset {
+      font-size: 12px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .cake-3d-reset:hover {
+      background: #fff;
+    }
+
+    .cake-3d-reset.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .visual-note {
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      margin: 0;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .legend-dot.ref { background: var(--ref); }
+    .legend-dot.new { background: var(--new); }
+
+    .ratio-grid {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .ratio-box {
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .ratio-box-title {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .ratio-box-value {
+      margin: 0;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .ratio-box-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    details {
+      margin-top: 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 18px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 750;
+    }
+
+    code {
+      background: #f1f1f1;
+      padding: 2px 5px;
+      border-radius: 6px;
+    }
+
+    .formula {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 800px) {
+      .page { padding: 16px; }
+      h1 { font-size: 26px; }
+      .grid { grid-template-columns: 1fr; }
+      .mode { grid-template-columns: 1fr; }
+      .ratio-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <h1>Калькулятор торта</h1>
+      <p class="subtitle">
+        Спочатку введіть параметри торта, який вже виходив добре. З нього рахується щільність.
+        Потім змінюйте параметри нового торта — калькулятор перерахує потрібне значення.
+      </p>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <h2>1. Референсний торт</h2>
+        <p class="hint">
+          Це торт, який вже робили раніше. За його діаметром, висотою та вагою рахуємо щільність.
+        </p>
+
+        <div class="field">
+          <label for="refDiameter">Діаметр</label>
+          <div class="input-row">
+            <input id="refDiameter" type="number" min="0" step="0.1" value="16" />
+            <span class="unit">см</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="refHeight">Висота</label>
+          <div class="input-row">
+            <input id="refHeight" type="number" min="0" step="0.1" value="10" />
+            <span class="unit">см</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="refWeight">Вага</label>
+          <div class="input-row">
+            <input id="refWeight" type="number" min="0" step="1" value="1300" />
+            <span class="unit">г</span>
+          </div>
+        </div>
+
+        <div class="result">
+          <p class="result-title">Щільність цього типу торта</p>
+          <p class="result-value"><span id="density">—</span> г/см³</p>
+          <div class="small-result">
+            Іншими словами: 100 см³ такого торта важать приблизно
+            <strong><span id="weightPer100cm3">—</span> г</strong>.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2. Новий торт</h2>
+        <p class="hint">
+          Оберіть, що саме треба порахувати. Два інші параметри введіть вручну.
+        </p>
+
+        <div class="mode" aria-label="Що порахувати">
+          <button id="calcWeightBtn" type="button">Порахувати вагу</button>
+          <button id="calcHeightBtn" type="button" class="active">Порахувати висоту</button>
+          <button id="calcDiameterBtn" type="button">Порахувати діаметр</button>
+        </div>
+
+        <div class="field">
+          <label for="newDiameter">Діаметр</label>
+          <div class="input-row">
+            <input id="newDiameter" type="number" min="0" step="0.1" value="22" />
+            <span class="unit">см</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="newHeight">Висота</label>
+          <div class="input-row">
+            <input id="newHeight" type="number" min="0" step="0.1" value="" />
+            <span class="unit">см</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="newWeight">Вага</label>
+          <div class="input-row">
+            <input id="newWeight" type="number" min="0" step="1" value="5000" />
+            <span class="unit">г</span>
+          </div>
+        </div>
+
+        <div class="result">
+          <p class="result-title">Результат</p>
+          <p class="result-value"><span id="mainResult">—</span></p>
+          <div class="small-result" id="resultExplanation">—</div>
+        </div>
+
+        <div class="status" id="currentDensityStatus">
+          Поточна щільність нового торта: —
+        </div>
+      </div>
+    </section>
+
+    <section class="card visual-card">
+      <h2>3. Порівняння старого і нового торта</h2>
+      <p class="hint">
+        Обидва циліндри малюються в одному масштабі. Так легше побачити, наскільки новий торт буде ширший або вищий за референсний.
+      </p>
+
+      <div class="cake-visual-wrap">
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot ref"></span> Референсний торт</span>
+          <span class="legend-item"><span class="legend-dot new"></span> Новий торт</span>
+        </div>
+
+        <div class="cake-3d-wrap" id="cake3d">
+          <div class="cake-3d-controls">
+            <button type="button" class="cake-3d-reset active" id="toggleLabelsBtn">Підказки</button>
+            <button type="button" class="cake-3d-reset" id="resetViewBtn">Скинути вигляд</button>
+          </div>
+          <div class="cake-3d-hint">Тягніть — обертати, колесо — масштаб</div>
+        </div>
+
+        <p class="visual-note" id="densityNote">—</p>
+        <p class="visual-note" id="visualNote">—</p>
+
+        <div class="ratio-grid">
+          <div class="ratio-box">
+            <p class="ratio-box-title">Референс: діаметр / висота</p>
+            <p class="ratio-box-value" id="refRatio">—</p>
+            <p class="ratio-box-note" id="refRatioNote">—</p>
+          </div>
+
+          <div class="ratio-box">
+            <p class="ratio-box-title">Новий: діаметр / висота</p>
+            <p class="ratio-box-value" id="newRatio">—</p>
+            <p class="ratio-box-note" id="newRatioNote">—</p>
+          </div>
+
+          <div class="ratio-box">
+            <p class="ratio-box-title">Різниця пропорції</p>
+            <p class="ratio-box-value" id="ratioDiff">—</p>
+            <p class="ratio-box-note" id="ratioDiffNote">—</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <details>
+      <summary>Формули</summary>
+      <p class="formula">Обʼєм циліндра: <code>V = π × (діаметр / 2)² × висота</code></p>
+      <p class="formula">Щільність референсу: <code>ρ = вага / V</code></p>
+      <p class="formula">Вага: <code>m = ρ × π × (діаметр / 2)² × висота</code></p>
+      <p class="formula">Висота: <code>h = m / (ρ × π × (діаметр / 2)²)</code></p>
+      <p class="formula">Діаметр: <code>d = 2 × √(m / (ρ × π × висота))</code></p>
+    </details>
+  </main>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
+
+    const state = { mode: "height" };
+
+    const els = {
+      refDiameter: document.getElementById("refDiameter"),
+      refHeight: document.getElementById("refHeight"),
+      refWeight: document.getElementById("refWeight"),
+
+      newDiameter: document.getElementById("newDiameter"),
+      newHeight: document.getElementById("newHeight"),
+      newWeight: document.getElementById("newWeight"),
+
+      density: document.getElementById("density"),
+      weightPer100cm3: document.getElementById("weightPer100cm3"),
+      mainResult: document.getElementById("mainResult"),
+      resultExplanation: document.getElementById("resultExplanation"),
+      currentDensityStatus: document.getElementById("currentDensityStatus"),
+
+      cake3d: document.getElementById("cake3d"),
+      resetViewBtn: document.getElementById("resetViewBtn"),
+      toggleLabelsBtn: document.getElementById("toggleLabelsBtn"),
+      densityNote: document.getElementById("densityNote"),
+      visualNote: document.getElementById("visualNote"),
+      refRatio: document.getElementById("refRatio"),
+      refRatioNote: document.getElementById("refRatioNote"),
+      newRatio: document.getElementById("newRatio"),
+      newRatioNote: document.getElementById("newRatioNote"),
+      ratioDiff: document.getElementById("ratioDiff"),
+      ratioDiffNote: document.getElementById("ratioDiffNote"),
+
+      calcWeightBtn: document.getElementById("calcWeightBtn"),
+      calcHeightBtn: document.getElementById("calcHeightBtn"),
+      calcDiameterBtn: document.getElementById("calcDiameterBtn")
+    };
+
+    function number(input) {
+      const value = Number(input.value);
+      return Number.isFinite(value) && value > 0 ? value : null;
+    }
+
+    function round(value, digits = 2) {
+      if (!Number.isFinite(value)) return "—";
+      return value.toLocaleString("uk-UA", {
+        maximumFractionDigits: digits,
+        minimumFractionDigits: value < 10 ? Math.min(digits, 2) : 0
+      });
+    }
+
+    function formatForInput(value, digits = 1) {
+      if (!Number.isFinite(value)) return "";
+      return Number(value.toFixed(digits)).toString();
+    }
+
+    function volumeByDiameterHeight(diameter, height) {
+      const radius = diameter / 2;
+      return Math.PI * radius * radius * height;
+    }
+
+    function getReferenceDensity() {
+      const d = number(els.refDiameter);
+      const h = number(els.refHeight);
+      const w = number(els.refWeight);
+      if (!d || !h || !w) return null;
+      return w / volumeByDiameterHeight(d, h);
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+
+      els.calcWeightBtn.classList.toggle("active", mode === "weight");
+      els.calcHeightBtn.classList.toggle("active", mode === "height");
+      els.calcDiameterBtn.classList.toggle("active", mode === "diameter");
+
+      els.newWeight.classList.toggle("readonly", mode === "weight");
+      els.newHeight.classList.toggle("readonly", mode === "height");
+      els.newDiameter.classList.toggle("readonly", mode === "diameter");
+
+      els.newWeight.readOnly = mode === "weight";
+      els.newHeight.readOnly = mode === "height";
+      els.newDiameter.readOnly = mode === "diameter";
+
+      calculate();
+    }
+
+    function calculate() {
+      const density = getReferenceDensity();
+
+      if (!density) {
+        els.density.textContent = "—";
+        els.weightPer100cm3.textContent = "—";
+        els.mainResult.textContent = "—";
+        els.resultExplanation.textContent = "Введіть коректні параметри референсного торта.";
+        els.currentDensityStatus.textContent = "Поточна щільність нового торта: —";
+        els.currentDensityStatus.className = "status warn";
+        updateVisualization();
+        return;
+      }
+
+      els.density.textContent = round(density, 3);
+      els.weightPer100cm3.textContent = round(density * 100, 1);
+
+      const d = number(els.newDiameter);
+      const h = number(els.newHeight);
+      const w = number(els.newWeight);
+
+      if (state.mode === "weight") {
+        if (!d || !h) {
+          els.mainResult.textContent = "—";
+          els.resultExplanation.textContent = "Введіть діаметр і висоту нового торта.";
+        } else {
+          const calculatedWeight = density * volumeByDiameterHeight(d, h);
+          els.newWeight.value = Math.round(calculatedWeight);
+          els.mainResult.textContent = `${round(calculatedWeight, 0)} г`;
+          els.resultExplanation.textContent =
+            `Для діаметра ${round(d, 1)} см і висоти ${round(h, 1)} см вага буде приблизно ${round(calculatedWeight / 1000, 2)} кг.`;
+        }
+      }
+
+      if (state.mode === "height") {
+        if (!d || !w) {
+          els.mainResult.textContent = "—";
+          els.resultExplanation.textContent = "Введіть діаметр і вагу нового торта.";
+        } else {
+          const radius = d / 2;
+          const calculatedHeight = w / (density * Math.PI * radius * radius);
+          els.newHeight.value = formatForInput(calculatedHeight, 1);
+          els.mainResult.textContent = `${round(calculatedHeight, 1)} см`;
+          els.resultExplanation.textContent =
+            `Для діаметра ${round(d, 1)} см і ваги ${round(w / 1000, 2)} кг висота має бути приблизно ${round(calculatedHeight, 1)} см.`;
+        }
+      }
+
+      if (state.mode === "diameter") {
+        if (!h || !w) {
+          els.mainResult.textContent = "—";
+          els.resultExplanation.textContent = "Введіть висоту і вагу нового торта.";
+        } else {
+          const calculatedDiameter = 2 * Math.sqrt(w / (density * Math.PI * h));
+          els.newDiameter.value = formatForInput(calculatedDiameter, 1);
+          els.mainResult.textContent = `${round(calculatedDiameter, 1)} см`;
+          els.resultExplanation.textContent =
+            `Для висоти ${round(h, 1)} см і ваги ${round(w / 1000, 2)} кг діаметр має бути приблизно ${round(calculatedDiameter, 1)} см.`;
+        }
+      }
+
+      updateCurrentDensityStatus();
+      updateVisualization();
+    }
+
+    function updateCurrentDensityStatus() {
+      const refDensity = getReferenceDensity();
+      const d = number(els.newDiameter);
+      const h = number(els.newHeight);
+      const w = number(els.newWeight);
+
+      if (!refDensity || !d || !h || !w) {
+        els.currentDensityStatus.textContent = "Поточна щільність нового торта: —";
+        els.currentDensityStatus.className = "status";
+        return;
+      }
+
+      const currentDensity = w / volumeByDiameterHeight(d, h);
+      const diff = ((currentDensity - refDensity) / refDensity) * 100;
+      const absDiff = Math.abs(diff);
+
+      els.currentDensityStatus.textContent =
+        `Поточна щільність нового торта: ${round(currentDensity, 3)} г/см³. ` +
+        `Різниця з референсом: ${diff >= 0 ? "+" : ""}${round(diff, 1)}%.`;
+
+      els.currentDensityStatus.className = absDiff <= 3 ? "status ok" : "status warn";
+    }
+
+    let scene, camera, renderer, labelRenderer, controls, refMesh, newMesh, refLabels, newLabels;
+    let lastTotalWidth = 10;
+    let lastTotalHeight = 8;
+    let labelsVisible = true;
+    const DEFAULT_CAMERA_DIR = new THREE.Vector3(0, 6, 16).sub(new THREE.Vector3(0, 2, 0)).normalize();
+
+    function makeLabel(mesh, muted) {
+      const div = document.createElement("div");
+      div.className = muted ? "cake-3d-label muted" : "cake-3d-label";
+      const obj = new CSS2DObject(div);
+      mesh.add(obj);
+      return { div, obj };
+    }
+
+    function createCake(color, title) {
+      const mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(1, 1, 1, 48),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.6 })
+      );
+      scene.add(mesh);
+
+      const labels = {
+        title: makeLabel(mesh, false),
+        weight: makeLabel(mesh, false),
+        diameter: makeLabel(mesh, true),
+        height: makeLabel(mesh, true)
+      };
+      labels.title.div.textContent = title;
+
+      return { mesh, labels };
+    }
+
+    function initScene() {
+      const container = els.cake3d;
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 6, 16);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      container.appendChild(renderer.domElement);
+
+      labelRenderer = new CSS2DRenderer();
+      labelRenderer.setSize(container.clientWidth, container.clientHeight);
+      labelRenderer.domElement.style.position = "absolute";
+      labelRenderer.domElement.style.top = "0";
+      labelRenderer.domElement.style.left = "0";
+      labelRenderer.domElement.style.pointerEvents = "none";
+      container.appendChild(labelRenderer.domElement);
+
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.minDistance = 4;
+      controls.maxDistance = 60;
+      controls.target.set(0, 2, 0);
+      controls.update();
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+      dirLight.position.set(6, 10, 8);
+      scene.add(dirLight);
+
+      const refCake = createCake(0x9f7aea, "Референс");
+      refMesh = refCake.mesh;
+      refLabels = refCake.labels;
+
+      const newCake = createCake(0x8b5e34, "Новий");
+      newMesh = newCake.mesh;
+      newLabels = newCake.labels;
+
+      window.addEventListener("resize", onResize);
+
+      animate();
+    }
+
+    function onResize() {
+      const container = els.cake3d;
+      const w = container.clientWidth;
+      const h = container.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+      labelRenderer.setSize(w, h);
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+      labelRenderer.render(scene, camera);
+    }
+
+    function setCake(mesh, labels, diameter, height, weight, unit, offsetX) {
+      const scaledD = diameter * unit;
+      const scaledH = Math.max(0.05, height * unit);
+      const r = scaledD / 2;
+
+      mesh.geometry.dispose();
+      mesh.geometry = new THREE.CylinderGeometry(r, r, scaledH, 48);
+      mesh.position.set(offsetX, scaledH / 2, 0);
+      mesh.visible = true;
+
+      labels.title.obj.position.set(0, scaledH / 2 + 0.6, 0);
+      labels.weight.div.textContent = `${round(weight / 1000, 2)} кг`;
+      labels.weight.obj.position.set(0, 0, 0);
+      labels.diameter.div.textContent = `d ${round(diameter, 1)} см`;
+      labels.diameter.obj.position.set(0, -scaledH / 2 - 0.4, 0);
+      labels.height.div.textContent = `h ${round(height, 1)} см`;
+      labels.height.obj.position.set(r + 0.4, 0, 0);
+
+      applyLabelVisibility(labels);
+    }
+
+    function hideCake(mesh, labels) {
+      mesh.visible = false;
+      Object.values(labels).forEach(label => { label.div.textContent = ""; });
+    }
+
+    function applyLabelVisibility(labels) {
+      labels.weight.obj.visible = labelsVisible;
+      labels.diameter.obj.visible = labelsVisible;
+      labels.height.obj.visible = labelsVisible;
+    }
+
+    function toggleLabels() {
+      labelsVisible = !labelsVisible;
+      els.toggleLabelsBtn.classList.toggle("active", labelsVisible);
+      applyLabelVisibility(refLabels);
+      applyLabelVisibility(newLabels);
+    }
+
+    function frameScene(totalWidth, totalHeight) {
+      const padding = 1.35;
+      const vFov = camera.fov * (Math.PI / 180);
+      const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
+
+      const distForHeight = (totalHeight / 2) / Math.tan(vFov / 2);
+      const distForWidth = (totalWidth / 2) / Math.tan(hFov / 2);
+      const distance = Math.max(distForHeight, distForWidth) * padding;
+
+      const target = new THREE.Vector3(0, totalHeight / 2, 0);
+
+      const direction = new THREE.Vector3().subVectors(camera.position, controls.target);
+      if (direction.lengthSq() < 1e-6) direction.set(0, 0.4, 1);
+      direction.normalize();
+
+      controls.target.copy(target);
+      camera.position.copy(target).addScaledVector(direction, distance);
+      camera.updateProjectionMatrix();
+      controls.update();
+    }
+
+    function resetView() {
+      camera.position.copy(controls.target).addScaledVector(DEFAULT_CAMERA_DIR, 1);
+      frameScene(lastTotalWidth, lastTotalHeight);
+    }
+
+    function updateVisualization() {
+      const density = getReferenceDensity();
+
+      const refD = number(els.refDiameter);
+      const refH = number(els.refHeight);
+      const refW = number(els.refWeight);
+
+      const newD = number(els.newDiameter);
+      const newH = number(els.newHeight);
+      const newW = number(els.newWeight);
+
+      if (!density || !refD || !refH || !refW || !newD || !newH || !newW) {
+        hideCake(refMesh, refLabels);
+        hideCake(newMesh, newLabels);
+        els.densityNote.textContent = "—";
+        els.visualNote.textContent = "Введіть параметри старого і нового торта, щоб побачити порівняння.";
+        updateRatioComparison(null, null);
+        return;
+      }
+
+      const maxD = Math.max(refD, newD);
+      const maxH = Math.max(refH, newH);
+      const unit = 8 / Math.max(maxD, maxH);
+
+      const refRadius = (refD * unit) / 2;
+      const newRadius = (newD * unit) / 2;
+      const gap = 1.2;
+
+      setCake(refMesh, refLabels, refD, refH, refW, unit, -(refRadius + gap / 2));
+      setCake(newMesh, newLabels, newD, newH, newW, unit, newRadius + gap / 2);
+
+      lastTotalWidth = refRadius * 2 + newRadius * 2 + gap;
+      lastTotalHeight = Math.max(refH, newH) * unit + 1.5;
+      frameScene(lastTotalWidth, lastTotalHeight);
+
+      const diameterRatio = newD / refD;
+      const heightRatio = newH / refH;
+      const weightRatio = newW / refW;
+      const refShapeRatio = refD / refH;
+      const newShapeRatio = newD / newH;
+
+      updateRatioComparison(refShapeRatio, newShapeRatio);
+
+      els.densityNote.textContent = `Щільність референсу: ${round(density, 3)} г/см³`;
+
+      els.visualNote.textContent =
+        `Новий торт: діаметр у ${round(diameterRatio, 2)}×, висота у ${round(heightRatio, 2)}×, вага у ${round(weightRatio, 2)}× від референсного. ` +
+        `Пропорція ширина/висота: референс ${round(refShapeRatio, 2)}:1, новий ${round(newShapeRatio, 2)}:1.`;
+    }
+
+    function updateRatioComparison(refRatio, newRatio) {
+      if (!refRatio || !newRatio) {
+        els.refRatio.textContent = "—";
+        els.refRatioNote.textContent = "—";
+        els.newRatio.textContent = "—";
+        els.newRatioNote.textContent = "—";
+        els.ratioDiff.textContent = "—";
+        els.ratioDiffNote.textContent = "—";
+        return;
+      }
+
+      const diff = ((newRatio - refRatio) / refRatio) * 100;
+      const absDiff = Math.abs(diff);
+
+      els.refRatio.textContent = `${round(refRatio, 2)} : 1`;
+      els.refRatioNote.textContent = `На 1 см висоти припадає ${round(refRatio, 2)} см діаметра.`;
+
+      els.newRatio.textContent = `${round(newRatio, 2)} : 1`;
+      els.newRatioNote.textContent = `На 1 см висоти припадає ${round(newRatio, 2)} см діаметра.`;
+
+      els.ratioDiff.textContent = `${diff >= 0 ? "+" : ""}${round(diff, 1)}%`;
+
+      if (absDiff <= 5) {
+        els.ratioDiffNote.textContent = "Пропорція майже така сама, форма буде схожа.";
+      } else if (diff > 0) {
+        els.ratioDiffNote.textContent = "Новий торт буде візуально ширший і нижчий відносно висоти.";
+      } else {
+        els.ratioDiffNote.textContent = "Новий торт буде візуально вищий і вужчий відносно висоти.";
+      }
+    }
+
+    function drawCakeComparison() {
+      const density = getReferenceDensity();
+
+      const refD = number(els.refDiameter);
+      const refH = number(els.refHeight);
+      const refW = number(els.refWeight);
+
+      const newD = number(els.newDiameter);
+      const newH = number(els.newHeight);
+      const newW = number(els.newWeight);
+
+      if (!density || !refD || !refH || !refW || !newD || !newH || !newW) {
+        clearCylinder("ref");
+        clearCylinder("new");
+        els.densityLabel.textContent = "";
+        els.visualNote.textContent = "Введіть параметри старого і нового торта, щоб побачити порівняння.";
+        updateRatioComparison(null, null);
+        return;
+      }
+
+      const maxD = Math.max(refD, newD);
+      const maxH = Math.max(refH, newH);
+
+      const scale = Math.min(230 / maxD, 230 / maxH);
+
+      drawCylinder("ref", 215, 76, refD, refH, refW, scale);
+      drawCylinder("new", 545, 76, newD, newH, newW, scale);
+
+      const diameterRatio = newD / refD;
+      const heightRatio = newH / refH;
+      const weightRatio = newW / refW;
+      const refShapeRatio = refD / refH;
+      const newShapeRatio = newD / newH;
+
+      updateRatioComparison(refShapeRatio, newShapeRatio);
+
+      els.densityLabel.setAttribute("x", 380);
+      els.densityLabel.setAttribute("y", 396);
+      els.densityLabel.textContent = `Щільність референсу: ${round(density, 3)} г/см³`;
+
+      els.visualNote.textContent =
+        `Новий торт: діаметр у ${round(diameterRatio, 2)}×, висота у ${round(heightRatio, 2)}×, вага у ${round(weightRatio, 2)}× від референсного. ` +
+        `Пропорція ширина/висота: референс ${round(refShapeRatio, 2)}:1, новий ${round(newShapeRatio, 2)}:1.`;
+    }
+
+    [
+      els.refDiameter,
+      els.refHeight,
+      els.refWeight,
+      els.newDiameter,
+      els.newHeight,
+      els.newWeight
+    ].forEach(input => input.addEventListener("input", calculate));
+
+    els.calcWeightBtn.addEventListener("click", () => setMode("weight"));
+    els.calcHeightBtn.addEventListener("click", () => setMode("height"));
+    els.calcDiameterBtn.addEventListener("click", () => setMode("diameter"));
+
+    els.resetViewBtn.addEventListener("click", resetView);
+    els.toggleLabelsBtn.addEventListener("click", toggleLabels);
+
+    initScene();
+    setMode("height");
+  </script>
+</body>
+</html>
