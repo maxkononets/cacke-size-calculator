@@ -606,6 +606,38 @@
       return w / volumeByDiameterHeight(d, h);
     }
 
+    // Параметри в адресному рядку:
+    //   референс — rd (діаметр), rh (висота), rw (вага), завжди записуються;
+    //   новий торт — mode + nd / nh / nw, опціональні (можна будувати URL ззовні
+    //   лише з референсом і переадресовувати на цю сторінку).
+    const URL_PARAMS = {
+      rd: "refDiameter",
+      rh: "refHeight",
+      rw: "refWeight",
+      nd: "newDiameter",
+      nh: "newHeight",
+      nw: "newWeight"
+    };
+
+    function applyParamsFromURL() {
+      const p = new URLSearchParams(location.search);
+      for (const [key, elKey] of Object.entries(URL_PARAMS)) {
+        if (p.has(key)) els[elKey].value = p.get(key).trim();
+      }
+      const mode = p.get("mode");
+      return ["weight", "height", "diameter"].includes(mode) ? mode : null;
+    }
+
+    function updateURL() {
+      const p = new URLSearchParams();
+      p.set("mode", state.mode);
+      for (const [key, elKey] of Object.entries(URL_PARAMS)) {
+        const value = els[elKey].value.trim();
+        if (value !== "") p.set(key, value);
+      }
+      history.replaceState(null, "", "?" + p.toString());
+    }
+
     function setMode(mode) {
       state.mode = mode;
 
@@ -622,6 +654,7 @@
       els.newDiameter.readOnly = mode === "diameter";
 
       calculate();
+      updateURL();
     }
 
     function calculate() {
@@ -953,51 +986,6 @@
       }
     }
 
-    function drawCakeComparison() {
-      const density = getReferenceDensity();
-
-      const refD = number(els.refDiameter);
-      const refH = number(els.refHeight);
-      const refW = number(els.refWeight);
-
-      const newD = number(els.newDiameter);
-      const newH = number(els.newHeight);
-      const newW = number(els.newWeight);
-
-      if (!density || !refD || !refH || !refW || !newD || !newH || !newW) {
-        clearCylinder("ref");
-        clearCylinder("new");
-        els.densityLabel.textContent = "";
-        els.visualNote.textContent = "Введіть параметри старого і нового торта, щоб побачити порівняння.";
-        updateRatioComparison(null, null);
-        return;
-      }
-
-      const maxD = Math.max(refD, newD);
-      const maxH = Math.max(refH, newH);
-
-      const scale = Math.min(230 / maxD, 230 / maxH);
-
-      drawCylinder("ref", 215, 76, refD, refH, refW, scale);
-      drawCylinder("new", 545, 76, newD, newH, newW, scale);
-
-      const diameterRatio = newD / refD;
-      const heightRatio = newH / refH;
-      const weightRatio = newW / refW;
-      const refShapeRatio = refD / refH;
-      const newShapeRatio = newD / newH;
-
-      updateRatioComparison(refShapeRatio, newShapeRatio);
-
-      els.densityLabel.setAttribute("x", 380);
-      els.densityLabel.setAttribute("y", 396);
-      els.densityLabel.textContent = `Щільність референсу: ${round(density, 3)} г/см³`;
-
-      els.visualNote.textContent =
-        `Новий торт: діаметр у ${round(diameterRatio, 2)}×, висота у ${round(heightRatio, 2)}×, вага у ${round(weightRatio, 2)}× від референсного. ` +
-        `Пропорція ширина/висота: референс ${round(refShapeRatio, 2)}:1, новий ${round(newShapeRatio, 2)}:1.`;
-    }
-
     [
       els.refDiameter,
       els.refHeight,
@@ -1005,7 +993,10 @@
       els.newDiameter,
       els.newHeight,
       els.newWeight
-    ].forEach(input => input.addEventListener("input", calculate));
+    ].forEach(input => input.addEventListener("input", () => {
+      calculate();
+      updateURL();
+    }));
 
     els.calcWeightBtn.addEventListener("click", () => setMode("weight"));
     els.calcHeightBtn.addEventListener("click", () => setMode("height"));
@@ -1014,8 +1005,9 @@
     els.resetViewBtn.addEventListener("click", resetView);
     els.toggleLabelsBtn.addEventListener("click", toggleLabels);
 
+    const urlMode = applyParamsFromURL();
     initScene();
-    setMode("height");
+    setMode(urlMode || "height");
   </script>
 </body>
 </html>
