@@ -77,6 +77,8 @@
 
     .field { margin-bottom: 14px; }
 
+    .hidden { display: none; }
+
     label {
       display: block;
       margin-bottom: 6px;
@@ -136,14 +138,22 @@
       font-size: 14px;
     }
 
+    .shape-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 0 0 16px;
+    }
+
     .mode {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
       gap: 8px;
       margin: 12px 0 16px;
     }
 
-    .mode button {
+    .mode button,
+    .shape-toggle button {
       border: 1px solid var(--border);
       background: #fff;
       border-radius: 12px;
@@ -152,7 +162,8 @@
       cursor: pointer;
     }
 
-    .mode button.active {
+    .mode button.active,
+    .shape-toggle button.active {
       background: var(--accent);
       color: #fff;
       border-color: var(--accent);
@@ -365,11 +376,18 @@
       font-size: 14px;
     }
 
+    .formula-group {
+      margin: 14px 0 0;
+      font-weight: 700;
+      color: var(--text);
+      font-size: 14px;
+    }
+
     @media (max-width: 800px) {
       .page { padding: 16px; }
       h1 { font-size: 26px; }
       .grid { grid-template-columns: 1fr; }
-      .mode { grid-template-columns: 1fr; }
+      .mode { grid-template-columns: repeat(2, 1fr); }
       .ratio-grid { grid-template-columns: 1fr; }
     }
   </style>
@@ -381,6 +399,7 @@
       <p class="subtitle">
         Спочатку введіть параметри торта, який вже виходив добре. З нього рахується щільність.
         Потім змінюйте параметри нового торта — калькулятор перерахує потрібне значення.
+        Кожен торт може бути круглим або прямокутним.
       </p>
     </header>
 
@@ -388,13 +407,34 @@
       <div class="card">
         <h2>1. Референсний торт</h2>
         <p class="hint">
-          Це торт, який вже робили раніше. За його діаметром, висотою та вагою рахуємо щільність.
+          Це торт, який вже робили раніше. За його розмірами та вагою рахуємо щільність.
         </p>
 
-        <div class="field">
+        <div class="shape-toggle" aria-label="Форма референсного торта">
+          <button id="refShapeRoundBtn" type="button" class="active">Кругла</button>
+          <button id="refShapeRectBtn" type="button">Прямокутна</button>
+        </div>
+
+        <div class="field" id="refDiameterField">
           <label for="refDiameter">Діаметр</label>
           <div class="input-row">
             <input id="refDiameter" type="number" min="0" step="0.1" value="16" />
+            <span class="unit">см</span>
+          </div>
+        </div>
+
+        <div class="field hidden" id="refLengthField">
+          <label for="refLength">Довжина</label>
+          <div class="input-row">
+            <input id="refLength" type="number" min="0" step="0.1" value="20" />
+            <span class="unit">см</span>
+          </div>
+        </div>
+
+        <div class="field hidden" id="refWidthField">
+          <label for="refWidth">Ширина</label>
+          <div class="input-row">
+            <input id="refWidth" type="number" min="0" step="0.1" value="20" />
             <span class="unit">см</span>
           </div>
         </div>
@@ -428,19 +468,42 @@
       <div class="card">
         <h2>2. Новий торт</h2>
         <p class="hint">
-          Оберіть, що саме треба порахувати. Два інші параметри введіть вручну.
+          Оберіть форму та що саме порахувати. Решту параметрів введіть вручну.
         </p>
 
-        <div class="mode" aria-label="Що порахувати">
-          <button id="calcWeightBtn" type="button">Порахувати вагу</button>
-          <button id="calcHeightBtn" type="button" class="active">Порахувати висоту</button>
-          <button id="calcDiameterBtn" type="button">Порахувати діаметр</button>
+        <div class="shape-toggle" aria-label="Форма нового торта">
+          <button id="newShapeRoundBtn" type="button" class="active">Кругла</button>
+          <button id="newShapeRectBtn" type="button">Прямокутна</button>
         </div>
 
-        <div class="field">
+        <div class="mode" aria-label="Що порахувати">
+          <button id="calcWeightBtn" type="button">Вагу</button>
+          <button id="calcHeightBtn" type="button" class="active">Висоту</button>
+          <button id="calcDiameterBtn" type="button">Діаметр</button>
+          <button id="calcLengthBtn" type="button" class="hidden">Довжину</button>
+          <button id="calcWidthBtn" type="button" class="hidden">Ширину</button>
+        </div>
+
+        <div class="field" id="newDiameterField">
           <label for="newDiameter">Діаметр</label>
           <div class="input-row">
             <input id="newDiameter" type="number" min="0" step="0.1" value="22" />
+            <span class="unit">см</span>
+          </div>
+        </div>
+
+        <div class="field hidden" id="newLengthField">
+          <label for="newLength">Довжина</label>
+          <div class="input-row">
+            <input id="newLength" type="number" min="0" step="0.1" value="30" />
+            <span class="unit">см</span>
+          </div>
+        </div>
+
+        <div class="field hidden" id="newWidthField">
+          <label for="newWidth">Ширина</label>
+          <div class="input-row">
+            <input id="newWidth" type="number" min="0" step="0.1" value="20" />
             <span class="unit">см</span>
           </div>
         </div>
@@ -476,7 +539,7 @@
     <section class="card visual-card">
       <h2>3. Порівняння старого і нового торта</h2>
       <p class="hint">
-        Обидва циліндри малюються в одному масштабі. Так легше побачити, наскільки новий торт буде ширший або вищий за референсний.
+        Обидва торти малюються в одному масштабі. Так легше побачити, наскільки новий торт буде ширший або вищий за референсний.
       </p>
 
       <div class="cake-visual-wrap">
@@ -498,13 +561,13 @@
 
         <div class="ratio-grid">
           <div class="ratio-box">
-            <p class="ratio-box-title">Референс: діаметр / висота</p>
+            <p class="ratio-box-title" id="refRatioTitle">Референс: діаметр / висота</p>
             <p class="ratio-box-value" id="refRatio">—</p>
             <p class="ratio-box-note" id="refRatioNote">—</p>
           </div>
 
           <div class="ratio-box">
-            <p class="ratio-box-title">Новий: діаметр / висота</p>
+            <p class="ratio-box-title" id="newRatioTitle">Новий: діаметр / висота</p>
             <p class="ratio-box-value" id="newRatio">—</p>
             <p class="ratio-box-note" id="newRatioNote">—</p>
           </div>
@@ -520,11 +583,21 @@
 
     <details>
       <summary>Формули</summary>
-      <p class="formula">Обʼєм циліндра: <code>V = π × (діаметр / 2)² × висота</code></p>
+      <p class="formula-group">Обʼєм</p>
+      <p class="formula">Кругла (циліндр): <code>V = π × (діаметр / 2)² × висота</code></p>
+      <p class="formula">Прямокутна (коробка): <code>V = довжина × ширина × висота</code></p>
       <p class="formula">Щільність референсу: <code>ρ = вага / V</code></p>
+
+      <p class="formula-group">Перерахунок — кругла форма</p>
       <p class="formula">Вага: <code>m = ρ × π × (діаметр / 2)² × висота</code></p>
       <p class="formula">Висота: <code>h = m / (ρ × π × (діаметр / 2)²)</code></p>
       <p class="formula">Діаметр: <code>d = 2 × √(m / (ρ × π × висота))</code></p>
+
+      <p class="formula-group">Перерахунок — прямокутна форма</p>
+      <p class="formula">Вага: <code>m = ρ × довжина × ширина × висота</code></p>
+      <p class="formula">Висота: <code>h = m / (ρ × довжина × ширина)</code></p>
+      <p class="formula">Довжина: <code>довжина = m / (ρ × ширина × висота)</code></p>
+      <p class="formula">Ширина: <code>ширина = m / (ρ × довжина × висота)</code></p>
     </details>
   </main>
 
@@ -541,14 +614,31 @@
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { CSS2DRenderer, CSS2DObject } from "three/addons/renderers/CSS2DRenderer.js";
 
-    const state = { mode: "height" };
+    const state = {
+      ref: { shape: "round" },
+      new: { shape: "round", mode: "height" }
+    };
 
     const els = {
+      refShapeRoundBtn: document.getElementById("refShapeRoundBtn"),
+      refShapeRectBtn: document.getElementById("refShapeRectBtn"),
+      refDiameterField: document.getElementById("refDiameterField"),
+      refLengthField: document.getElementById("refLengthField"),
+      refWidthField: document.getElementById("refWidthField"),
       refDiameter: document.getElementById("refDiameter"),
+      refLength: document.getElementById("refLength"),
+      refWidth: document.getElementById("refWidth"),
       refHeight: document.getElementById("refHeight"),
       refWeight: document.getElementById("refWeight"),
 
+      newShapeRoundBtn: document.getElementById("newShapeRoundBtn"),
+      newShapeRectBtn: document.getElementById("newShapeRectBtn"),
+      newDiameterField: document.getElementById("newDiameterField"),
+      newLengthField: document.getElementById("newLengthField"),
+      newWidthField: document.getElementById("newWidthField"),
       newDiameter: document.getElementById("newDiameter"),
+      newLength: document.getElementById("newLength"),
+      newWidth: document.getElementById("newWidth"),
       newHeight: document.getElementById("newHeight"),
       newWeight: document.getElementById("newWeight"),
 
@@ -563,8 +653,10 @@
       toggleLabelsBtn: document.getElementById("toggleLabelsBtn"),
       densityNote: document.getElementById("densityNote"),
       visualNote: document.getElementById("visualNote"),
+      refRatioTitle: document.getElementById("refRatioTitle"),
       refRatio: document.getElementById("refRatio"),
       refRatioNote: document.getElementById("refRatioNote"),
+      newRatioTitle: document.getElementById("newRatioTitle"),
       newRatio: document.getElementById("newRatio"),
       newRatioNote: document.getElementById("newRatioNote"),
       ratioDiff: document.getElementById("ratioDiff"),
@@ -572,7 +664,9 @@
 
       calcWeightBtn: document.getElementById("calcWeightBtn"),
       calcHeightBtn: document.getElementById("calcHeightBtn"),
-      calcDiameterBtn: document.getElementById("calcDiameterBtn")
+      calcDiameterBtn: document.getElementById("calcDiameterBtn"),
+      calcLengthBtn: document.getElementById("calcLengthBtn"),
+      calcWidthBtn: document.getElementById("calcWidthBtn")
     };
 
     function number(input) {
@@ -593,65 +687,165 @@
       return Number(value.toFixed(digits)).toString();
     }
 
-    function volumeByDiameterHeight(diameter, height) {
-      const radius = diameter / 2;
-      return Math.PI * radius * radius * height;
+    // Геометрія торта залежить від форми:
+    //   кругла — циліндр за діаметром і висотою;
+    //   прямокутна — коробка за довжиною, шириною і висотою.
+    function getCakeInput(which) {
+      const shape = state[which].shape;
+      const height = number(els[which + "Height"]);
+      const weight = number(els[which + "Weight"]);
+      if (shape === "round") {
+        return { shape, diameter: number(els[which + "Diameter"]), height, weight };
+      }
+      return {
+        shape,
+        length: number(els[which + "Length"]),
+        width: number(els[which + "Width"]),
+        height,
+        weight
+      };
     }
 
+    function dimsComplete(d) {
+      if (!d.height || !d.weight) return false;
+      if (d.shape === "round") return !!d.diameter;
+      return !!d.length && !!d.width;
+    }
+
+    function volumeOf(d) {
+      if (d.shape === "round") {
+        const r = d.diameter / 2;
+        return Math.PI * r * r * d.height;
+      }
+      return d.length * d.width * d.height;
+    }
+
+    // Фронтальний (видимий спереду) і глибинний розміри основи для 3D і пропорцій.
+    function frontDim(d) { return d.shape === "round" ? d.diameter : d.length; }
+    function depthDim(d) { return d.shape === "round" ? d.diameter : d.width; }
+
     function getReferenceDensity() {
-      const d = number(els.refDiameter);
-      const h = number(els.refHeight);
-      const w = number(els.refWeight);
-      if (!d || !h || !w) return null;
-      return w / volumeByDiameterHeight(d, h);
+      const d = getCakeInput("ref");
+      if (!dimsComplete(d)) return null;
+      return d.weight / volumeOf(d);
     }
 
     // Параметри в адресному рядку:
-    //   референс — rd (діаметр), rh (висота), rw (вага), завжди записуються;
-    //   новий торт — mode + nd / nh / nw, опціональні (можна будувати URL ззовні
-    //   лише з референсом і переадресовувати на цю сторінку).
-    const URL_PARAMS = {
-      rd: "refDiameter",
-      rh: "refHeight",
-      rw: "refWeight",
-      nd: "newDiameter",
-      nh: "newHeight",
-      nw: "newWeight"
-    };
-
+    //   форма — rs / ns (round | rect); якщо відсутні — кругла (сумісність зі старими посиланнями);
+    //   референс — rd (діаметр) або rl/rb (довжина/ширина), плюс rh (висота), rw (вага);
+    //   новий торт — mode + nd або nl/nb, плюс nh / nw, опціональні.
     function applyParamsFromURL() {
       const p = new URLSearchParams(location.search);
-      for (const [key, elKey] of Object.entries(URL_PARAMS)) {
-        if (p.has(key)) els[elKey].value = p.get(key).trim();
-      }
-      const mode = p.get("mode");
-      return ["weight", "height", "diameter"].includes(mode) ? mode : null;
+      const setIf = (key, elKey) => { if (p.has(key)) els[elKey].value = p.get(key).trim(); };
+
+      setIf("rd", "refDiameter");
+      setIf("rl", "refLength");
+      setIf("rb", "refWidth");
+      setIf("rh", "refHeight");
+      setIf("rw", "refWeight");
+
+      setIf("nd", "newDiameter");
+      setIf("nl", "newLength");
+      setIf("nb", "newWidth");
+      setIf("nh", "newHeight");
+      setIf("nw", "newWeight");
+
+      return {
+        refShape: p.get("rs") === "rect" ? "rect" : "round",
+        newShape: p.get("ns") === "rect" ? "rect" : "round",
+        mode: p.get("mode")
+      };
     }
 
     function updateURL() {
       const p = new URLSearchParams();
-      p.set("mode", state.mode);
-      for (const [key, elKey] of Object.entries(URL_PARAMS)) {
+      p.set("mode", state.new.mode);
+      p.set("rs", state.ref.shape);
+      p.set("ns", state.new.shape);
+
+      const setP = (key, elKey) => {
         const value = els[elKey].value.trim();
         if (value !== "") p.set(key, value);
+      };
+
+      if (state.ref.shape === "round") {
+        setP("rd", "refDiameter");
+      } else {
+        setP("rl", "refLength");
+        setP("rb", "refWidth");
       }
+      setP("rh", "refHeight");
+      setP("rw", "refWeight");
+
+      if (state.new.shape === "round") {
+        setP("nd", "newDiameter");
+      } else {
+        setP("nl", "newLength");
+        setP("nb", "newWidth");
+      }
+      setP("nh", "newHeight");
+      setP("nw", "newWeight");
+
       history.replaceState(null, "", "?" + p.toString());
     }
 
+    // Допустимі режими: кругла — weight/height/diameter; прямокутна — weight/height/length/width.
+    function coerceMode(mode, shape) {
+      if (shape === "round") {
+        return (mode === "length" || mode === "width") ? "diameter" : mode;
+      }
+      return mode === "diameter" ? "length" : mode;
+    }
+
+    function applyModeUI() {
+      const mode = state.new.mode;
+      const buttons = {
+        weight: els.calcWeightBtn,
+        height: els.calcHeightBtn,
+        diameter: els.calcDiameterBtn,
+        length: els.calcLengthBtn,
+        width: els.calcWidthBtn
+      };
+      const fields = {
+        weight: els.newWeight,
+        height: els.newHeight,
+        diameter: els.newDiameter,
+        length: els.newLength,
+        width: els.newWidth
+      };
+
+      for (const m in buttons) buttons[m].classList.toggle("active", m === mode);
+      for (const m in fields) {
+        const readOnly = m === mode;
+        fields[m].classList.toggle("readonly", readOnly);
+        fields[m].readOnly = readOnly;
+      }
+    }
+
     function setMode(mode) {
-      state.mode = mode;
+      state.new.mode = coerceMode(mode, state.new.shape);
+      applyModeUI();
+      calculate();
+      updateURL();
+    }
 
-      els.calcWeightBtn.classList.toggle("active", mode === "weight");
-      els.calcHeightBtn.classList.toggle("active", mode === "height");
-      els.calcDiameterBtn.classList.toggle("active", mode === "diameter");
+    function setShape(which, shape) {
+      state[which].shape = shape;
 
-      els.newWeight.classList.toggle("readonly", mode === "weight");
-      els.newHeight.classList.toggle("readonly", mode === "height");
-      els.newDiameter.classList.toggle("readonly", mode === "diameter");
+      els[which + "ShapeRoundBtn"].classList.toggle("active", shape === "round");
+      els[which + "ShapeRectBtn"].classList.toggle("active", shape === "rect");
 
-      els.newWeight.readOnly = mode === "weight";
-      els.newHeight.readOnly = mode === "height";
-      els.newDiameter.readOnly = mode === "diameter";
+      els[which + "DiameterField"].classList.toggle("hidden", shape !== "round");
+      els[which + "LengthField"].classList.toggle("hidden", shape !== "rect");
+      els[which + "WidthField"].classList.toggle("hidden", shape !== "rect");
+
+      if (which === "new") {
+        els.calcDiameterBtn.classList.toggle("hidden", shape !== "round");
+        els.calcLengthBtn.classList.toggle("hidden", shape !== "rect");
+        els.calcWidthBtn.classList.toggle("hidden", shape !== "rect");
+        state.new.mode = coerceMode(state.new.mode, shape);
+        applyModeUI();
+      }
 
       calculate();
       updateURL();
@@ -674,47 +868,91 @@
       els.density.textContent = round(density, 3);
       els.weightPer100cm3.textContent = round(density * 100, 1);
 
-      const d = number(els.newDiameter);
+      const showResult = (value, explanation) => {
+        els.mainResult.textContent = value;
+        els.resultExplanation.textContent = explanation;
+      };
+      const needInput = (msg) => {
+        els.mainResult.textContent = "—";
+        els.resultExplanation.textContent = msg;
+      };
+
+      const mode = state.new.mode;
       const h = number(els.newHeight);
       const w = number(els.newWeight);
 
-      if (state.mode === "weight") {
-        if (!d || !h) {
-          els.mainResult.textContent = "—";
-          els.resultExplanation.textContent = "Введіть діаметр і висоту нового торта.";
-        } else {
-          const calculatedWeight = density * volumeByDiameterHeight(d, h);
-          els.newWeight.value = Math.round(calculatedWeight);
-          els.mainResult.textContent = `${round(calculatedWeight, 0)} г`;
-          els.resultExplanation.textContent =
-            `Для діаметра ${round(d, 1)} см і висоти ${round(h, 1)} см вага буде приблизно ${round(calculatedWeight / 1000, 2)} кг.`;
-        }
-      }
+      if (state.new.shape === "round") {
+        const d = number(els.newDiameter);
 
-      if (state.mode === "height") {
-        if (!d || !w) {
-          els.mainResult.textContent = "—";
-          els.resultExplanation.textContent = "Введіть діаметр і вагу нового торта.";
-        } else {
-          const radius = d / 2;
-          const calculatedHeight = w / (density * Math.PI * radius * radius);
-          els.newHeight.value = formatForInput(calculatedHeight, 1);
-          els.mainResult.textContent = `${round(calculatedHeight, 1)} см`;
-          els.resultExplanation.textContent =
-            `Для діаметра ${round(d, 1)} см і ваги ${round(w / 1000, 2)} кг висота має бути приблизно ${round(calculatedHeight, 1)} см.`;
+        if (mode === "weight") {
+          if (!d || !h) {
+            needInput("Введіть діаметр і висоту нового торта.");
+          } else {
+            const m = density * volumeOf({ shape: "round", diameter: d, height: h });
+            els.newWeight.value = Math.round(m);
+            showResult(`${round(m, 0)} г`,
+              `Для діаметра ${round(d, 1)} см і висоти ${round(h, 1)} см вага буде приблизно ${round(m / 1000, 2)} кг.`);
+          }
+        } else if (mode === "height") {
+          if (!d || !w) {
+            needInput("Введіть діаметр і вагу нового торта.");
+          } else {
+            const r = d / 2;
+            const ch = w / (density * Math.PI * r * r);
+            els.newHeight.value = formatForInput(ch, 1);
+            showResult(`${round(ch, 1)} см`,
+              `Для діаметра ${round(d, 1)} см і ваги ${round(w / 1000, 2)} кг висота має бути приблизно ${round(ch, 1)} см.`);
+          }
+        } else if (mode === "diameter") {
+          if (!h || !w) {
+            needInput("Введіть висоту і вагу нового торта.");
+          } else {
+            const cd = 2 * Math.sqrt(w / (density * Math.PI * h));
+            els.newDiameter.value = formatForInput(cd, 1);
+            showResult(`${round(cd, 1)} см`,
+              `Для висоти ${round(h, 1)} см і ваги ${round(w / 1000, 2)} кг діаметр має бути приблизно ${round(cd, 1)} см.`);
+          }
         }
-      }
+      } else {
+        const L = number(els.newLength);
+        const W = number(els.newWidth);
 
-      if (state.mode === "diameter") {
-        if (!h || !w) {
-          els.mainResult.textContent = "—";
-          els.resultExplanation.textContent = "Введіть висоту і вагу нового торта.";
-        } else {
-          const calculatedDiameter = 2 * Math.sqrt(w / (density * Math.PI * h));
-          els.newDiameter.value = formatForInput(calculatedDiameter, 1);
-          els.mainResult.textContent = `${round(calculatedDiameter, 1)} см`;
-          els.resultExplanation.textContent =
-            `Для висоти ${round(h, 1)} см і ваги ${round(w / 1000, 2)} кг діаметр має бути приблизно ${round(calculatedDiameter, 1)} см.`;
+        if (mode === "weight") {
+          if (!L || !W || !h) {
+            needInput("Введіть довжину, ширину і висоту нового торта.");
+          } else {
+            const m = density * L * W * h;
+            els.newWeight.value = Math.round(m);
+            showResult(`${round(m, 0)} г`,
+              `Для основи ${round(L, 1)} × ${round(W, 1)} см і висоти ${round(h, 1)} см вага буде приблизно ${round(m / 1000, 2)} кг.`);
+          }
+        } else if (mode === "height") {
+          if (!L || !W || !w) {
+            needInput("Введіть довжину, ширину і вагу нового торта.");
+          } else {
+            const ch = w / (density * L * W);
+            els.newHeight.value = formatForInput(ch, 1);
+            showResult(`${round(ch, 1)} см`,
+              `Для основи ${round(L, 1)} × ${round(W, 1)} см і ваги ${round(w / 1000, 2)} кг висота має бути приблизно ${round(ch, 1)} см.`);
+          }
+        } else if (mode === "length") {
+          if (!W || !h || !w) {
+            needInput("Введіть ширину, висоту і вагу нового торта.");
+          } else {
+            const cl = w / (density * W * h);
+            els.newLength.value = formatForInput(cl, 1);
+            showResult(`${round(cl, 1)} см`,
+              `Для ширини ${round(W, 1)} см, висоти ${round(h, 1)} см і ваги ${round(w / 1000, 2)} кг довжина має бути приблизно ${round(cl, 1)} см.`);
+          }
+        } else if (mode === "width") {
+          if (!L || !h || !w) {
+            needInput("Введіть довжину, висоту і вагу нового торта.");
+          } else {
+            const cw = w / (density * L * h);
+            els.newWidth.value = formatForInput(cw, 1);
+            showResult(`${round(cw, 1)} см`,
+              `Для довжини ${round(L, 1)} см, висоти ${round(h, 1)} см і ваги ${round(w / 1000, 2)} кг ширина має бути приблизно ${round(cw, 1)} см.`);
+          }
         }
       }
 
@@ -724,17 +962,15 @@
 
     function updateCurrentDensityStatus() {
       const refDensity = getReferenceDensity();
-      const d = number(els.newDiameter);
-      const h = number(els.newHeight);
-      const w = number(els.newWeight);
+      const d = getCakeInput("new");
 
-      if (!refDensity || !d || !h || !w) {
+      if (!refDensity || !dimsComplete(d)) {
         els.currentDensityStatus.textContent = "Поточна щільність нового торта: —";
         els.currentDensityStatus.className = "status";
         return;
       }
 
-      const currentDensity = w / volumeByDiameterHeight(d, h);
+      const currentDensity = d.weight / volumeOf(d);
       const diff = ((currentDensity - refDensity) / refDensity) * 100;
       const absDiff = Math.abs(diff);
 
@@ -767,9 +1003,10 @@
       scene.add(mesh);
 
       const labels = {
+        titleText: title,
         title: makeLabel(mesh, false),
         weight: makeLabel(mesh, false),
-        diameter: makeLabel(mesh, true),
+        size: makeLabel(mesh, true),
         height: makeLabel(mesh, true)
       };
       labels.title.div.textContent = title;
@@ -840,35 +1077,52 @@
       labelRenderer.render(scene, camera);
     }
 
-    function setCake(mesh, labels, diameter, height, weight, unit, offsetX) {
-      const scaledD = diameter * unit;
-      const scaledH = Math.max(0.05, height * unit);
-      const r = scaledD / 2;
+    function setCake(mesh, labels, dims, unit, offsetX) {
+      const scaledH = Math.max(0.05, dims.height * unit);
+      let halfX;
 
       mesh.geometry.dispose();
-      mesh.geometry = new THREE.CylinderGeometry(r, r, scaledH, 48);
+      if (dims.shape === "round") {
+        const r = (dims.diameter * unit) / 2;
+        mesh.geometry = new THREE.CylinderGeometry(r, r, scaledH, 48);
+        halfX = r;
+      } else {
+        const sx = dims.length * unit;
+        const sz = dims.width * unit;
+        mesh.geometry = new THREE.BoxGeometry(sx, scaledH, sz);
+        halfX = sx / 2;
+      }
+
       mesh.position.set(offsetX, scaledH / 2, 0);
       mesh.visible = true;
 
+      labels.title.div.textContent = labels.titleText;
       labels.title.obj.position.set(0, scaledH / 2 + 0.6, 0);
-      labels.weight.div.textContent = `${round(weight / 1000, 2)} кг`;
+
+      labels.weight.div.textContent = `${round(dims.weight / 1000, 2)} кг`;
       labels.weight.obj.position.set(0, 0, 0);
-      labels.diameter.div.textContent = `d ${round(diameter, 1)} см`;
-      labels.diameter.obj.position.set(0, -scaledH / 2 - 0.4, 0);
-      labels.height.div.textContent = `h ${round(height, 1)} см`;
-      labels.height.obj.position.set(r + 0.4, 0, 0);
+
+      labels.size.div.textContent = dims.shape === "round"
+        ? `d ${round(dims.diameter, 1)} см`
+        : `${round(dims.length, 1)} × ${round(dims.width, 1)} см`;
+      labels.size.obj.position.set(0, -scaledH / 2 - 0.4, 0);
+
+      labels.height.div.textContent = `h ${round(dims.height, 1)} см`;
+      labels.height.obj.position.set(halfX + 0.4, 0, 0);
 
       applyLabelVisibility(labels);
     }
 
     function hideCake(mesh, labels) {
       mesh.visible = false;
-      Object.values(labels).forEach(label => { label.div.textContent = ""; });
+      Object.values(labels).forEach(label => {
+        if (label && label.div) label.div.textContent = "";
+      });
     }
 
     function applyLabelVisibility(labels) {
       labels.weight.obj.visible = labelsVisible;
-      labels.diameter.obj.visible = labelsVisible;
+      labels.size.obj.visible = labelsVisible;
       labels.height.obj.visible = labelsVisible;
     }
 
@@ -907,16 +1161,10 @@
 
     function updateVisualization() {
       const density = getReferenceDensity();
+      const ref = getCakeInput("ref");
+      const neu = getCakeInput("new");
 
-      const refD = number(els.refDiameter);
-      const refH = number(els.refHeight);
-      const refW = number(els.refWeight);
-
-      const newD = number(els.newDiameter);
-      const newH = number(els.newHeight);
-      const newW = number(els.newWeight);
-
-      if (!density || !refD || !refH || !refW || !newD || !newH || !newW) {
+      if (!density || !dimsComplete(ref) || !dimsComplete(neu)) {
         hideCake(refMesh, refLabels);
         hideCake(newMesh, newLabels);
         els.densityNote.textContent = "—";
@@ -925,38 +1173,47 @@
         return;
       }
 
-      const maxD = Math.max(refD, newD);
-      const maxH = Math.max(refH, newH);
-      const unit = 8 / Math.max(maxD, maxH);
+      const refFront = frontDim(ref);
+      const refDepth = depthDim(ref);
+      const newFront = frontDim(neu);
+      const newDepth = depthDim(neu);
 
-      const refRadius = (refD * unit) / 2;
-      const newRadius = (newD * unit) / 2;
+      const maxHoriz = Math.max(refFront, refDepth, newFront, newDepth);
+      const maxH = Math.max(ref.height, neu.height);
+      const unit = 8 / Math.max(maxHoriz, maxH);
       const gap = 1.2;
 
-      setCake(refMesh, refLabels, refD, refH, refW, unit, -(refRadius + gap / 2));
-      setCake(newMesh, newLabels, newD, newH, newW, unit, newRadius + gap / 2);
+      const refHalfX = (refFront * unit) / 2;
+      const newHalfX = (newFront * unit) / 2;
 
-      lastTotalWidth = refRadius * 2 + newRadius * 2 + gap;
-      lastTotalHeight = Math.max(refH, newH) * unit + 1.5;
+      setCake(refMesh, refLabels, ref, unit, -(refHalfX + gap / 2));
+      setCake(newMesh, newLabels, neu, unit, newHalfX + gap / 2);
+
+      const combinedX = refHalfX * 2 + newHalfX * 2 + gap;
+      const maxDepth = Math.max(refDepth, newDepth) * unit;
+      lastTotalWidth = Math.max(combinedX, maxDepth);
+      lastTotalHeight = maxH * unit + 1.5;
       frameScene(lastTotalWidth, lastTotalHeight);
 
-      const diameterRatio = newD / refD;
-      const heightRatio = newH / refH;
-      const weightRatio = newW / refW;
-      const refShapeRatio = refD / refH;
-      const newShapeRatio = newD / newH;
+      updateRatioComparison(ref, neu);
 
-      updateRatioComparison(refShapeRatio, newShapeRatio);
+      const frontRatio = newFront / refFront;
+      const heightRatio = neu.height / ref.height;
+      const weightRatio = neu.weight / ref.weight;
+      const refShapeRatio = refFront / ref.height;
+      const newShapeRatio = newFront / neu.height;
 
       els.densityNote.textContent = `Щільність референсу: ${round(density, 3)} г/см³`;
 
       els.visualNote.textContent =
-        `Новий торт: діаметр у ${round(diameterRatio, 2)}×, висота у ${round(heightRatio, 2)}×, вага у ${round(weightRatio, 2)}× від референсного. ` +
-        `Пропорція ширина/висота: референс ${round(refShapeRatio, 2)}:1, новий ${round(newShapeRatio, 2)}:1.`;
+        `Новий торт відносно референсного: основа ×${round(frontRatio, 2)}, висота ×${round(heightRatio, 2)}, вага ×${round(weightRatio, 2)}. ` +
+        `Пропорція основи до висоти: референс ${round(refShapeRatio, 2)}:1, новий ${round(newShapeRatio, 2)}:1.`;
     }
 
-    function updateRatioComparison(refRatio, newRatio) {
-      if (!refRatio || !newRatio) {
+    function updateRatioComparison(ref, neu) {
+      if (!ref || !neu) {
+        els.refRatioTitle.textContent = "Референс: основа / висота";
+        els.newRatioTitle.textContent = "Новий: основа / висота";
         els.refRatio.textContent = "—";
         els.refRatioNote.textContent = "—";
         els.newRatio.textContent = "—";
@@ -966,14 +1223,24 @@
         return;
       }
 
-      const diff = ((newRatio - refRatio) / refRatio) * 100;
-      const absDiff = Math.abs(diff);
+      const refRatio = frontDim(ref) / ref.height;
+      const newRatio = frontDim(neu) / neu.height;
+      const refWord = ref.shape === "round" ? "діаметр" : "довжина";
+      const newWord = neu.shape === "round" ? "діаметр" : "довжина";
+      const refWordGen = ref.shape === "round" ? "діаметра" : "довжини";
+      const newWordGen = neu.shape === "round" ? "діаметра" : "довжини";
+
+      els.refRatioTitle.textContent = `Референс: ${refWord} / висота`;
+      els.newRatioTitle.textContent = `Новий: ${newWord} / висота`;
 
       els.refRatio.textContent = `${round(refRatio, 2)} : 1`;
-      els.refRatioNote.textContent = `На 1 см висоти припадає ${round(refRatio, 2)} см діаметра.`;
+      els.refRatioNote.textContent = `На 1 см висоти припадає ${round(refRatio, 2)} см ${refWordGen}.`;
 
       els.newRatio.textContent = `${round(newRatio, 2)} : 1`;
-      els.newRatioNote.textContent = `На 1 см висоти припадає ${round(newRatio, 2)} см діаметра.`;
+      els.newRatioNote.textContent = `На 1 см висоти припадає ${round(newRatio, 2)} см ${newWordGen}.`;
+
+      const diff = ((newRatio - refRatio) / refRatio) * 100;
+      const absDiff = Math.abs(diff);
 
       els.ratioDiff.textContent = `${diff >= 0 ? "+" : ""}${round(diff, 1)}%`;
 
@@ -987,27 +1254,38 @@
     }
 
     [
-      els.refDiameter,
-      els.refHeight,
-      els.refWeight,
-      els.newDiameter,
-      els.newHeight,
-      els.newWeight
+      els.refDiameter, els.refLength, els.refWidth, els.refHeight, els.refWeight,
+      els.newDiameter, els.newLength, els.newWidth, els.newHeight, els.newWeight
     ].forEach(input => input.addEventListener("input", () => {
       calculate();
       updateURL();
     }));
 
+    els.refShapeRoundBtn.addEventListener("click", () => setShape("ref", "round"));
+    els.refShapeRectBtn.addEventListener("click", () => setShape("ref", "rect"));
+    els.newShapeRoundBtn.addEventListener("click", () => setShape("new", "round"));
+    els.newShapeRectBtn.addEventListener("click", () => setShape("new", "rect"));
+
     els.calcWeightBtn.addEventListener("click", () => setMode("weight"));
     els.calcHeightBtn.addEventListener("click", () => setMode("height"));
     els.calcDiameterBtn.addEventListener("click", () => setMode("diameter"));
+    els.calcLengthBtn.addEventListener("click", () => setMode("length"));
+    els.calcWidthBtn.addEventListener("click", () => setMode("width"));
 
     els.resetViewBtn.addEventListener("click", resetView);
     els.toggleLabelsBtn.addEventListener("click", toggleLabels);
 
-    const urlMode = applyParamsFromURL();
+    const init = applyParamsFromURL();
+    const startMode = ["weight", "height", "diameter", "length", "width"].includes(init.mode)
+      ? init.mode
+      : "height";
+
     initScene();
-    setMode(urlMode || "height");
+
+    setShape("ref", init.refShape);
+
+    state.new.mode = coerceMode(startMode, init.newShape);
+    setShape("new", init.newShape);
   </script>
 </body>
 </html>
